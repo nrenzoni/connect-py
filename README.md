@@ -40,10 +40,10 @@ Connect already works with your current tech stack:
 
 ## Getting started
 
-Install the runtime library:
+Install the runtime library with native client support:
 
 ```bash
-uv add connectrpc
+uv add 'connectrpc[client]'
 ```
 
 For codegen, install [`buf`](https://github.com/bufbuild/buf) and create `buf.gen.yaml`:
@@ -79,6 +79,32 @@ plugins:
 ```
 
 </details>
+
+### Server-only generation
+
+The base `connectrpc` package does not depend on the native `pyqwest` client transport.
+For server deployments that cannot load native extensions, install `connectrpc` without
+the `client` extra and use this fork's local plugin with `target=server`:
+
+```yaml
+version: v2
+plugins:
+  - local: .venv/bin/protoc-gen-py
+    out: gen
+  - local: .venv/bin/protoc-gen-connectrpc
+    out: gen
+    opt:
+      - target=server
+      - io=async
+```
+
+`target=server` emits service protocols and application classes without client classes
+or native client imports. Omit `io=async` to generate both ASGI and WSGI servers, or
+use `io=sync` for WSGI only. It also works with `protobuf=google`.
+The default `target=both` preserves generation of both servers and clients; importing
+those generated modules requires `connectrpc[client]`, even in a server process.
+This option is experimental in this fork and is not available from the upstream
+Buf-hosted plugin.
 
 <details>
 

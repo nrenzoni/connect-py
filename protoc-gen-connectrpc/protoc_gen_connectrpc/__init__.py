@@ -107,6 +107,16 @@ class _IOOption(str, Enum):
     """Generates only asynchronous code."""
 
 
+class _TargetOption(str, Enum):
+    """Whether to generate server code only or both servers and clients."""
+
+    BOTH = "both"
+    """Generates server and client code."""
+
+    SERVER = "server"
+    """Generates only server code."""
+
+
 @dataclass
 class Options:
     """Options for the Connect code generator."""
@@ -116,6 +126,9 @@ class Options:
 
     io: _IOOption | None = field(default=None)
     """The I/O mode for generated code."""
+
+    target: _TargetOption = _TargetOption.BOTH
+    """The runtime target for generated code."""
 
 
 def _generate(schema: Schema[Options]) -> None:
@@ -130,8 +143,9 @@ def _generate_file(f: File, desc: DescFile, options: Options) -> None:
     if options.protobuf == _ProtobufOption.GOOGLE:
         f.print()
         f.print("_DEFAULT_CODECS = ", _GOOGLE_PROTOBUF_CODECS, "()")
-        f.print("_PROTO_BINARY_CODEC = ", _GOOGLE_PROTOBUF_BINARY_CODEC, "()")
-        f.print("_GZIP_COMPRESSION = ", _GZIP_COMPRESSION, "()")
+        if options.target == _TargetOption.BOTH:
+            f.print("_PROTO_BINARY_CODEC = ", _GOOGLE_PROTOBUF_BINARY_CODEC, "()")
+            f.print("_GZIP_COMPRESSION = ", _GZIP_COMPRESSION, "()")
         f.print()
     for service in desc.services:
         if not options.io or options.io == _IOOption.ASYNC:
@@ -263,6 +277,8 @@ def _generate_async_stubs(f: File, service: DescService, options: Options) -> No
             f.print(f'return "/{service.type_name}"')
     f.print()
     f.print()
+    if options.target == _TargetOption.SERVER:
+        return
     with f.scope("class ", service_name, "Client(", _CONNECT_CLIENT, "):"):
         _print_docstring(f, service)
 
@@ -432,6 +448,8 @@ def _generate_sync_stubs(f: File, service: DescService, options: Options) -> Non
             f.print(f'return "/{service.type_name}"')
     f.print()
     f.print()
+    if options.target == _TargetOption.SERVER:
+        return
     with f.scope("class ", service_name, "ClientSync(", _CONNECT_CLIENT_SYNC, "):"):
         _print_docstring(f, service)
 

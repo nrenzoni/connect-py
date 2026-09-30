@@ -158,8 +158,12 @@ version = "0.12.1"
 source = { editable = "." }
 dependencies = [
     { name = "protobuf-py" },
-    { name = "pyqwest" },
     { name = "typing-extensions" },
+]
+
+[package.optional-dependencies]
+client = [
+    { name = "pyqwest" },
 ]
 
 [package.dev-dependencies]
@@ -203,9 +207,10 @@ docs = [
 [package.metadata]
 requires-dist = [
     { name = "protobuf-py", specifier = ">=0.3.0" },
-    { name = "pyqwest", specifier = ">=0.5.1" },
+    { name = "pyqwest", marker = "extra == 'client'", specifier = ">=0.5.1" },
     { name = "typing-extensions", specifier = ">=4.13.0" },
 ]
+provides-extras = ["client"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -451,7 +456,7 @@ name = "example"
 version = "0.1.0"
 source = { editable = "example" }
 dependencies = [
-    { name = "connectrpc" },
+    { name = "connectrpc", extra = ["client"] },
     { name = "flask" },
     { name = "protobuf-py" },
     { name = "starlette" },
@@ -459,7 +464,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "connectrpc", editable = "." },
+    { name = "connectrpc", extras = ["client"], editable = "." },
     { name = "flask", specifier = "==3.1.3" },
     { name = "protobuf-py", specifier = ">=0.1.1" },
     { name = "starlette", specifier = "==1.7.0" },

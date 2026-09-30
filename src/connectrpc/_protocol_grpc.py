@@ -7,8 +7,6 @@ from base64 import b64decode, b64encode
 from http import HTTPStatus
 from typing import TYPE_CHECKING, Any, TypeVar
 
-from pyqwest import Headers as HTTPHeaders
-
 from ._compression import IdentityCompression, negotiate_compression
 from ._envelope import EnvelopeReader, EnvelopeWriter
 from ._gen.google.rpc.status_pb import Status
@@ -27,7 +25,7 @@ from .request import Headers, RequestContext
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from pyqwest import Response, SyncResponse
+    from pyqwest import Headers as HTTPHeaders, Response, SyncResponse
 
     from ._codec import Codec
     from ._compression import Compression
@@ -411,6 +409,8 @@ class GRPCWebEnvelopeReader(GRPCEnvelopeReader):
         compression: Compression,
         read_max_bytes: int | None,
     ) -> None:
+        from pyqwest import Headers as HTTPHeaders
+
         super().__init__(message_class, codec, compression, read_max_bytes)
         self._trailers = HTTPHeaders()
 
